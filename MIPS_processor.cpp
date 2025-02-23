@@ -113,7 +113,7 @@ void Decode(string instruction){
         cout<<"rt: "<<rt_num<<endl;
         cout<<"imm: "<<imm_num<<endl;
     }
-    
+
     else if(type=="J"){
         address=instruction.substr(6,26);
         address_num=conver_binary_to_num(stoi(address));
@@ -127,7 +127,7 @@ void Decode(string instruction){
 }
 
 void ALU(){
-
+    
 }
 
 void Memory(){

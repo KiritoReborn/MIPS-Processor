@@ -100,12 +100,6 @@ void Decode(string instruction){
         cout<<"rd: "<<rd_num<<endl;
         cout<<"shamt: "<<shamt_num<<endl;
         cout<<"funct: "<<funct_num<<endl;
-
-        if(funct_num==32){
-            cout<<"ADD"<<endl;
-
-
-        }
     }
     else if(type=="I"){
         rs=instruction.substr(6,5);
@@ -119,6 +113,7 @@ void Decode(string instruction){
         cout<<"rt: "<<rt_num<<endl;
         cout<<"imm: "<<imm_num<<endl;
     }
+    
     else if(type=="J"){
         address=instruction.substr(6,26);
         address_num=conver_binary_to_num(stoi(address));
@@ -136,7 +131,7 @@ void ALU(){
 }
 
 void Memory(){
-    
+
 }
 
 int main(){

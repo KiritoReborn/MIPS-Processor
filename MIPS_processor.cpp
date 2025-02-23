@@ -131,7 +131,7 @@ void ALU(){
 }
 
 void Memory(){
-
+    
 }
 
 int main(){

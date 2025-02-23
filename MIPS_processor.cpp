@@ -79,11 +79,7 @@ int conver_binary_to_num(int binary_num){
     return num;
 }
 
-
-int main(){
-    string instruction;
-    cout<<"Enter the instruction: ";
-    cin>>instruction;
+void Decode(string instruction){
     string opcode=instruction.substr(0,6);
     int opcode_num=conver_binary_to_num(stoi(opcode));
     string type=opcodes[opcode_num];
@@ -104,6 +100,12 @@ int main(){
         cout<<"rd: "<<rd_num<<endl;
         cout<<"shamt: "<<shamt_num<<endl;
         cout<<"funct: "<<funct_num<<endl;
+
+        if(funct_num==32){
+            cout<<"ADD"<<endl;
+
+
+        }
     }
     else if(type=="I"){
         rs=instruction.substr(6,5);
@@ -123,5 +125,23 @@ int main(){
         cout<<"Type: "<<type<<endl;
         cout<<"address: "<<address_num<<endl;
     }
-    return 0;
+    
+    else{
+        cout<<"Invalid instruction"<<endl;
+    }
 }
+
+void ALU(){
+
+}
+
+void Memory(){
+    
+}
+
+int main(){
+    string instruction;
+    cout<<"Enter the instruction: ";
+    cin>>instruction;
+}
+    

@@ -7,8 +7,8 @@
 #include <string>
 using namespace std;
 
-int rs_num,rt_num,rd_num,shamt_num,funct_num,imm_num,address_num;
-string rs,rt,rd,shamt,funct,imm,address;
+int rs_num,rt_num,rd_num,shamt_num,funct_num,imm_num,address_num,opcode_num;
+string rs,rt,rd,shamt,funct,imm,address,type,opcode;
 
 map<string, int> registers={
     {"$zero",0},
@@ -71,7 +71,7 @@ map<string,int> datapath={
     {"memtoreg",0},
     {"regwrite",0},
     {"memwrite",0}
-};
+};  
 
 
 int convert_num_to_binary(int num){
@@ -97,9 +97,9 @@ int conver_binary_to_num(int binary_num){
 }
 
 void Decode(string instruction){
-    string opcode=instruction.substr(0,6);
-    int opcode_num=conver_binary_to_num(stoi(opcode));
-    string type=opcodes[opcode_num];
+    opcode=instruction.substr(0,6);
+    opcode_num=conver_binary_to_num(stoi(opcode));
+    type=opcodes[opcode_num];
     if(type=="R"){
         rs=instruction.substr(6,5);
         rt=instruction.substr(11,5);
@@ -117,6 +117,16 @@ void Decode(string instruction){
         cout<<"rd: "<<rd_num<<endl;
         cout<<"shamt: "<<shamt_num<<endl;
         cout<<"funct: "<<funct_num<<endl;
+
+        if(funct_num==32){
+            cout<<"Add"<<endl;
+
+        }
+
+        if(funct_num==34){
+            cout<<"Sub"<<endl;
+
+        }
     }
     else if(type=="I"){
         rs=instruction.substr(6,5);
@@ -129,6 +139,18 @@ void Decode(string instruction){
         cout<<"rs: "<<rs_num<<endl;
         cout<<"rt: "<<rt_num<<endl;
         cout<<"imm: "<<imm_num<<endl;
+        
+        if(opcode_num==35){
+            cout<<"Load"<<endl;
+            datapath["alucontrol"]=010;
+            datapath["memread"]=1;
+
+        }
+
+        if(opcode_num==43){
+            cout<<"Store"<<endl;
+
+        }
     }
 
     else if(type=="J"){
@@ -140,6 +162,35 @@ void Decode(string instruction){
     
     else{
         cout<<"Invalid instruction"<<endl;
+    }
+}
+
+void ctrl_ckt(){
+    if(strcmp("101011",opcode)==0){
+        datapath["memread"]=0;
+        datapath["memtoreg"]=1;
+        datapath["regwrite"]=1;
+        datapath["aluop"]=01;
+    }
+    else if(strcmp("000100",opcode)==0){
+        datapath["branch"]=1;
+    }
+    else if(strcmp("000010",opcode)==0){
+        datapath["jump"]=1;
+    }
+    else if(strcmp("000000",opcode)==0){
+        if(strcmp("100000",funct)==0){
+            datapath["aluop"]=10;
+            datapath["regwrite"]=1;
+        }
+        else if(strcmp("100010",funct)==0){
+            datapath["aluop"]=11;
+            datapath["regwrite"]=1;
+        }
+    }
+    else{
+        datapath["aluop"]=00;
+        datapath["regwrite"]=1;
     }
 }
 

@@ -159,7 +159,7 @@ void ctrl_ckt(){
         j=0;
     }
     else if(strcmp("000100",opcode)==0){
-        branch"]=1;
+        branch=1;
     }
     else if(strcmp("000010",opcode)==0){
         datapath["jump"]=1;

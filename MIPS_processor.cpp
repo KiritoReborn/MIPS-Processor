@@ -124,6 +124,17 @@ void ctrl_ckt(){
         regwr=0;
         j=0;
     }
+    else if(strcmp("000000",opcode)==0){
+        regdst=1;
+        branch=0;
+        memread=0;
+        memtoreg=1;
+        aluop="10";
+        memwrt=0;
+        alusrc=0;
+        regwr=1;
+        j=0;
+    }
     else if(strcmp("000100",opcode)==0){
         regdst=2;
         branch=1;
@@ -169,7 +180,30 @@ void ctrl_ckt(){
         regwr=1;
         j=0;
     }
+    else if(strcmp("011100",opcode)==0){
+        regdst=1;
+        branch=0;
+        memread=0;
+        memtoreg=0;
+        aluop="10";
+        memwrt=0;
+        alusrc=0;
+        regwr=1;
+        j=0;
+    }
+    else if(strcmp("000010",opcode)==0){
+        regdst=2;
+        branch=1;
+        memread=0;
+        memtoreg=1;
+        aluop="00";
+        memwrt=0;
+        alusrc=1;
+        regwr=0;
+        j=1;
+    }
     
+    alu_ctrl();
 }
 
 void ALU(){

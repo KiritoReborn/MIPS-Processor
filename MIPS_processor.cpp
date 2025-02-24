@@ -8,6 +8,8 @@
 #include <cstring>
 using namespace std;
 
+vector<string> memory(1000, "00000000");
+int pc=0;
 int rs_num,rt_num,rd_num,shamt_num,funct_num,imm_num,address_num,opcode_num;
 string rs,rt,rd,shamt,funct,imm,address,type,opcode,aluop,aluin;
 int regdst,branch,memread,memtoreg,memwrt,alusrc,regwr,j,zero,alures;
@@ -46,6 +48,13 @@ int conver_binary_to_num(int binary_num){
     }
     return num;
 }
+void Fetch(string& instruction){
+    instruction = memory[pc] + memory[pc+1] + memory[pc+2] + memory[pc+3];
+    pc = pc + 4;
+    cout << "Fetch----->" << endl;
+    cout << "PC: " << pc << endl;
+    cout << "Instruction: " << instruction << endl;
+}
 
 void Decode(string instruction){
     if(instruction.length() != 32) {
@@ -73,14 +82,6 @@ void Decode(string instruction){
         cout<<"rd: "<<rd_num<<endl;
         cout<<"shamt: "<<shamt_num<<endl;
         cout<<"funct: "<<funct_num<<endl;
-
-        if(funct_num==32){
-            cout<<"Add"<<endl;
-        }
-
-        if(funct_num==34){
-            cout<<"Sub"<<endl;
-        }
     }
     else if(type=="I"){
         rs=instruction.substr(6,5);
@@ -93,14 +94,6 @@ void Decode(string instruction){
         cout<<"rs: "<<rs_num<<endl;
         cout<<"rt: "<<rt_num<<endl;
         cout<<"imm: "<<imm_num<<endl;
-        
-        if(opcode_num==35){
-            cout<<"Load"<<endl;
-        }
-
-        if(opcode_num==43){
-            cout<<"Store"<<endl;
-        }
     }
     else if(type=="J"){
         address=instruction.substr(6,26);
@@ -225,9 +218,16 @@ void ctrl_ckt(){
     alu_ctrl();
 }
 
-void Memory(){
-    
-    
+void writeback(){
+    if(regwr==1){
+        cout<<"Writeback ----->"<<endl;
+        cout<<"rd: "<<rd_num<<endl;
+        cout<<"memtoReg: "<<memtoreg<<endl;
+        if(memtoreg==1){
+            cout<<"Write Data: "<<alures<<endl;
+
+        }
+    }    
 }
 
 void ALU(){

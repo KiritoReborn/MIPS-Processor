@@ -1,33 +1,31 @@
-section .data
-    n db 10            ; Number of Fibonacci numbers to generate
-    result db 0        ; Placeholder for the result
+        .data
+n:      .word 10               # Number of Fibonacci numbers to generate
+fib:    .word 0:10             # Array to store the Fibonacci numbers
 
-section .text
-    global _start
+        .text
+        .globl main
 
-_start:
-    mov ecx, 0         ; Initialize counter i (for loop variable)
-    mov eax, 0         ; Fibonacci(0)
-    mov ebx, 1         ; Fibonacci(1)
+main:
+        # Initialize registers
+        li $t0, 0              # i = 0 (counter)
+        li $t1, 0              # Fibonacci(0) = 0
+        li $t2, 1              # Fibonacci(1) = 1
+        la $t3, fib            # Load address of fib array
 
-loop_start:
-    cmp ecx, [n]       ; Compare counter (i) with n
-    jge loop_end       ; If counter >= n, exit the loop
+loop:
+        bge $t0, 10, exit      # If i >= 10, exit the loop
+        sw $t1, 0($t3)         # Store Fibonacci number in array
+        addi $t3, $t3, 4       # Move to next element in fib array
+        
+        # Calculate next Fibonacci number
+        add $t4, $t1, $t2      # temp = Fibonacci(i-1) + Fibonacci(i-2)
+        move $t1, $t2          # Fibonacci(i-1) = Fibonacci(i-2)
+        move $t2, $t4          # Fibonacci(i) = temp
 
-    ; Print the current Fibonacci number
-    ; (The result is in eax)
-    
-    ; Next Fibonacci number:
-    add eax, ebx       ; New Fibonacci = Fibonacci(i-1) + Fibonacci(i-2)
-    mov edx, eax       ; Copy new Fibonacci number to edx (for the next iteration)
-    mov eax, ebx       ; Move the previous Fibonacci value to eax
-    mov ebx, edx       ; Move the new Fibonacci value to ebx (for next iteration)
+        addi $t0, $t0, 1       # Increment counter (i)
+        j loop                 # Repeat the loop
 
-    inc ecx            ; Increment the counter
-    jmp loop_start     ; Repeat the loop
-
-loop_end:
-    ; Exit program (exit system call)
-    mov eax, 1         ; syscall number (sys_exit)
-    xor ebx, ebx       ; exit status code
-    int 0x80           ; call kernel
+exit:
+        # Exit program
+        li $v0, 10             # syscall number for exit
+        syscall

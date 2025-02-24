@@ -57,6 +57,23 @@ map<int, string> opcodes={
     {100011,"I"}
 };
 
+map<string,int> datapath={
+    {"memread",0},
+    {"memwrite",0},
+    {"memtoreg",0},
+    {"regwrite",0},
+    {"memwrite",0},
+    {"aluop",0},
+    {"alucontrol",0},
+    {"regdst",0},
+    {"jump",0},
+    {"branch",0},
+    {"memtoreg",0},
+    {"regwrite",0},
+    {"memwrite",0}
+};
+
+
 int convert_num_to_binary(int num){
     int binary_num=0;
     int i=1;

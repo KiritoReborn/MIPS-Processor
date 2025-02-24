@@ -301,14 +301,14 @@ int main() {
     memory[20] = "00001000"; memory[21] = "00000000"; memory[22] = "00000000"; memory[23] = "00000000";
 
     // Initialize registers
-    registers[1] = 8;  // Number of Fibonacci terms to compute
+    registers[1] = 9;  // Number of Fibonacci terms to compute
     registers[2] = 0;  // Loop counter
     registers[3] = 1;  // First Fibonacci number
     registers[4] = 88; // Result storage (dummy)
     registers[5] = 2;  // Memory address offset
     registers[6] = 1;  // Second Fibonacci number
 
-    while (pc < 24) {
+    while (pc < 30) {
         Fetch();
         Decode();
         Execute();

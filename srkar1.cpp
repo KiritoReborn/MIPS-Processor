@@ -6,12 +6,14 @@
 #include <algorithm>
 #include <string>
 #include <cstring>
+#include <bitset>
 using namespace std;
 
 vector<string> memory(1000, "00000000");
+vector<int> registers(32, 0);
 int pc=0;
 int rs_num,rt_num,rd_num,shamt_num,funct_num,imm_num,address_num,opcode_num;
-string rs,rt,rd,shamt,funct,imm,address,type,opcode,aluop,aluin;
+string rs,rt,rd,shamt,funct,imm,address,type,opcode,aluop,aluin,var1;
 int regdst,branch,memread,memtoreg,memwrt,alusrc,regwr,j,zero,alures;
 
 map<int, string> opcodes={
@@ -38,7 +40,7 @@ int convert_num_to_binary(int num){
     return binary_num;
 }
 
-int conver_binary_to_num(int binary_num){
+int convert_binary_to_num(int binary_num){
     int num=0;
     int i=0;
     while(binary_num>0){
@@ -48,6 +50,7 @@ int conver_binary_to_num(int binary_num){
     }
     return num;
 }
+
 void Fetch(string& instruction){
     instruction = memory[pc] + memory[pc+1] + memory[pc+2] + memory[pc+3];
     pc = pc + 4;
@@ -63,7 +66,7 @@ void Decode(string instruction){
     }
     
     opcode=instruction.substr(0,6);
-    opcode_num=conver_binary_to_num(stoi(opcode));
+    opcode_num=bitset<6>(opcode).to_ulong();
     type=opcodes[opcode_num];
     if(type=="R"){
         rs=instruction.substr(6,5);
@@ -71,11 +74,11 @@ void Decode(string instruction){
         rd=instruction.substr(16,5);
         shamt=instruction.substr(21,5);
         funct=instruction.substr(26,6);
-        rs_num=conver_binary_to_num(stoi(rs));
-        rt_num=conver_binary_to_num(stoi(rt));
-        rd_num=conver_binary_to_num(stoi(rd));
-        shamt_num=conver_binary_to_num(stoi(shamt));
-        funct_num=conver_binary_to_num(stoi(funct));
+        rs_num=bitset<5>(rs).to_ulong();
+        rt_num=bitset<5>(rt).to_ulong();
+        rd_num=bitset<5>(rd).to_ulong();
+        shamt_num=bitset<5>(shamt).to_ulong();
+        funct_num=bitset<6>(funct).to_ulong();
         cout<<"Type: "<<type<<endl;
         cout<<"rs: "<<rs_num<<endl;
         cout<<"rt: "<<rt_num<<endl;
@@ -87,9 +90,9 @@ void Decode(string instruction){
         rs=instruction.substr(6,5);
         rt=instruction.substr(11,5);
         imm=instruction.substr(16,16);
-        rs_num=conver_binary_to_num(stoi(rs));
-        rt_num=conver_binary_to_num(stoi(rt));
-        imm_num=conver_binary_to_num(stoi(imm));
+        rs_num=bitset<5>(rs).to_ulong();
+        rt_num=bitset<5>(rt).to_ulong();
+        imm_num=bitset<16>(imm).to_ulong();
         cout<<"Type: "<<type<<endl;
         cout<<"rs: "<<rs_num<<endl;
         cout<<"rt: "<<rt_num<<endl;
@@ -97,7 +100,7 @@ void Decode(string instruction){
     }
     else if(type=="J"){
         address=instruction.substr(6,26);
-        address_num=conver_binary_to_num(stoi(address));
+        address_num=bitset<26>(address).to_ulong();
         cout<<"Type: "<<type<<endl;
         cout<<"address: "<<address_num<<endl;
     }
@@ -157,7 +160,7 @@ void ctrl_ckt(){
         alusrc=0;
         regwr=0;
         j=0;
-        if(rs_num==rt_num){
+        if(registers[rs_num]==registers[rt_num]){
             zero=1;
         }
         else{
@@ -174,7 +177,7 @@ void ctrl_ckt(){
         alusrc=1;
         regwr=1;
         j=0;
-        if(rs_num!=rt_num){
+        if(registers[rs_num]!=registers[rt_num]){
             zero=1;
         }
         else{
@@ -224,33 +227,62 @@ void writeback(){
         cout<<"rd: "<<rd_num<<endl;
         cout<<"memtoReg: "<<memtoreg<<endl;
         if(memtoreg==1){
-            cout<<"Write Data: "<<alures<<endl;
-
+            cout<<"Write Data: "<<var1<<endl; // Assuming var1 holds the data read from memory
+        } else {
+            cout<<"Write Data: "<<alures<<endl; // Write ALU result
         }
+        // Assuming we have a register file array named 'registers'
+        if (memtoreg == 1) {
+            registers[rd_num] = stoi(var1); // Write memory data to register
+        } else {
+            registers[rd_num] = alures; // Write ALU result to register
+        }
+        cout << "After write back, value at destination: " << registers[rd_num] << endl;
     }    
+}
+
+void Memory(){
+    if(memwrt==0 && memread==1){
+        cout<<"Memory Access----->"<<endl;
+        var1 = ""; // Clear var1 before appending new data
+        for(int i=0;i<4;i++){
+            var1 += memory[alures+i];
+        }
+        cout << "Read Data: " << var1 << endl;
+    }
+    else if(memwrt==1 && memread==0){
+        cout<<"Memory ----->"<<endl;
+        var1 = convert_num_to_binary(alures);
+        cout<<"Write Data: "<<var1<<endl;
+        for(int i=0;i<4;i++){
+            memory[alures+i] = var1.substr(i*8, 8); // Write 8 bits at a time
+        }
+    }
+
+    writeback();
 }
 
 void ALU(){
     cout<<"ALU---";
     if(aluin == "010") {
         if(alusrc==1) {
-            alures=rs_num+imm_num;
+            alures=registers[rs_num]+imm_num;
             cout<<"After Add:"<<alures;
         }
         else if(alusrc==0) {
-            alures=rs_num+rt_num;
+            alures=registers[rs_num]+registers[rt_num];
             cout<<"After Add:"<<alures;
         }
     }
     else if(aluin == "011") {
         if(alusrc==0) {
-            alures=rs_num-rt_num;
+            alures=registers[rs_num]-registers[rt_num];
             cout<<"After Sub:"<<alures;
         }
     }
     else if(aluin == "111") {
         if(alusrc==0) {
-            alures=rs_num*rt_num;
+            alures=registers[rs_num]*registers[rt_num];
             cout<<"After Mul:"<<alures;
         }
     }
@@ -262,14 +294,26 @@ void ALU(){
     Memory();
 }
 
-int main(){
-    string instruction;
-    cout<<"Enter the instruction (32 bits): ";
-    cin>>instruction;
-    
-    Decode(instruction);
-    ctrl_ckt();
-    ALU();
-    
+int main() {
+    // *Correct MIPS Instructions in Memory (Big-Endian)*
+    // ADD  $3, $1, $2  -> opcode: 0x00221820
+    memory[0] = "00000000"; memory[1] = "00100010"; memory[2] = "00011000"; memory[3] = "00100000";
+
+    // BEQ  $1, $2, label -> opcode: 0x10220002
+    memory[4] = "00010000"; memory[5] = "00100010"; memory[6] = "00000000"; memory[7] = "00000010";
+
+    // Initialize registers
+    registers[1] = 10; // Set $1
+    registers[2] = 10; // Set $2 (equal to $1)
+
+    while (pc < 8) {
+        string instruction;
+        Fetch(instruction);
+        Decode(instruction);
+        ALU();
+    }
+
+    // Print the final result
+    cout << "Final value in $3: " << registers[3] << endl;
     return 0;
 }

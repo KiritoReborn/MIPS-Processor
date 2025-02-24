@@ -5,25 +5,27 @@
 #include <cmath>
 #include <algorithm>
 #include <string>
+#include <cstring>
 using namespace std;
 
 int rs_num,rt_num,rd_num,shamt_num,funct_num,imm_num,address_num,opcode_num;
 string rs,rt,rd,shamt,funct,imm,address,type,opcode,aluop,aluin;
-int regdst,branch,memread,memtoreg,memwrt,alusrc,regwr,j,zero;
+int regdst,branch,memread,memtoreg,memwrt,alusrc,regwr,j,zero,alures;
 
 map<int, string> opcodes={
-    {001001,"I"},
-    {000000,"R"},
-    {001000,"I"},
-    {000100,"I"},
-    {011100,"R"},
-    {000010,"J"},
-    {000101,"I"},
-    {101011,"I"},
-    {100011,"I"}
+    {0b001001,"I"},  // Changed to binary notation for clarity
+    {0b000000,"R"},
+    {0b001000,"I"},
+    {0b000100,"I"},
+    {0b011100,"R"},
+    {0b000010,"J"},
+    {0b000101,"I"},
+    {0b101011,"I"},
+    {0b100011,"I"}
 };
 
 int convert_num_to_binary(int num){
+    if(num == 0) return 0;  // Handle zero case
     int binary_num=0;
     int i=1;
     while(num>0){
@@ -46,6 +48,11 @@ int conver_binary_to_num(int binary_num){
 }
 
 void Decode(string instruction){
+    if(instruction.length() != 32) {
+        cout << "Invalid instruction length. Must be 32 bits." << endl;
+        return;
+    }
+    
     opcode=instruction.substr(0,6);
     opcode_num=conver_binary_to_num(stoi(opcode));
     type=opcodes[opcode_num];
@@ -69,12 +76,10 @@ void Decode(string instruction){
 
         if(funct_num==32){
             cout<<"Add"<<endl;
-
         }
 
         if(funct_num==34){
             cout<<"Sub"<<endl;
-
         }
     }
     else if(type=="I"){
@@ -91,53 +96,43 @@ void Decode(string instruction){
         
         if(opcode_num==35){
             cout<<"Load"<<endl;
-
         }
 
         if(opcode_num==43){
             cout<<"Store"<<endl;
-
         }
     }
-
     else if(type=="J"){
         address=instruction.substr(6,26);
         address_num=conver_binary_to_num(stoi(address));
         cout<<"Type: "<<type<<endl;
         cout<<"address: "<<address_num<<endl;
     }
-    
     else{
         cout<<"Invalid instruction"<<endl;
     }
 }
 
-void alu_ctrl()
-{
-    if(strcmp("00",aluop)==0)
-    {
+void alu_ctrl() {
+    if(aluop == "00") {
         aluin="010";
     }
-    else if(strcmp("10",aluop)==0 &&strcmp("100000",funct)==0)
-    {
+    else if(aluop == "10" && funct == "100000") {
         aluin="010";
     }
-    else if(strcmp("10",aluop)==0 &&strcmp("100010",funct)==0)
-    {
+    else if(aluop == "10" && funct == "100010") {
         aluin="011";
     }
-    else if(strcmp("10",aluop)==0 &&strcmp("000010",funct)==0)
-    {
+    else if(aluop == "10" && funct == "000010") {
         aluin="111";
     }
-    else if(strcmp("01",aluop)==0)
-    {
+    else if(aluop == "01") {
         aluin="100";
     }
 }
 
 void ctrl_ckt(){
-    if(strcmp("101011",opcode)==0){
+    if(opcode == "101011"){
         regdst=2;
         branch=0;
         memread=0;
@@ -148,7 +143,7 @@ void ctrl_ckt(){
         regwr=0;
         j=0;
     }
-    else if(strcmp("000000",opcode)==0){
+    else if(opcode == "000000"){
         regdst=1;
         branch=0;
         memread=0;
@@ -159,7 +154,7 @@ void ctrl_ckt(){
         regwr=1;
         j=0;
     }
-    else if(strcmp("000100",opcode)==0){
+    else if(opcode == "000100"){
         regdst=2;
         branch=1;
         memread=0;
@@ -176,7 +171,7 @@ void ctrl_ckt(){
             zero=0;
         }
     }
-        else if(strcmp("000101",opcode)==0){
+    else if(opcode == "000101"){
         regdst=2;
         branch=1;
         memread=0;
@@ -193,7 +188,7 @@ void ctrl_ckt(){
             zero=0;
         }
     }
-    else if(strcmp("100011",opcode)==0){
+    else if(opcode == "100011"){
         regdst=0;
         branch=0;
         memread=1;
@@ -204,7 +199,7 @@ void ctrl_ckt(){
         regwr=1;
         j=0;
     }
-    else if(strcmp("011100",opcode)==0){
+    else if(opcode == "011100"){
         regdst=1;
         branch=0;
         memread=0;
@@ -215,7 +210,7 @@ void ctrl_ckt(){
         regwr=1;
         j=0;
     }
-    else if(strcmp("000010",opcode)==0){
+    else if(opcode == "000010"){
         regdst=2;
         branch=1;
         memread=0;
@@ -226,60 +221,55 @@ void ctrl_ckt(){
         regwr=0;
         j=1;
     }
-    //alu
     
     alu_ctrl();
 }
 
+void Memory(){
+    
+    
+}
+
 void ALU(){
     cout<<"ALU---";
-    if(strcmp("010",aluin)==0)
-    {
-        if(alusrc==1)
-        {
+    if(aluin == "010") {
+        if(alusrc==1) {
             alures=rs_num+imm_num;
             cout<<"After Add:"<<alures;
         }
-        else if(alusrc==0)
-        {
+        else if(alusrc==0) {
             alures=rs_num+rt_num;
             cout<<"After Add:"<<alures;
         }
     }
-    else if(strcmp("011",aluin)==0)
-    {
-        if(alusrc==0)
-        {
+    else if(aluin == "011") {
+        if(alusrc==0) {
             alures=rs_num-rt_num;
             cout<<"After Sub:"<<alures;
         }
     }
-    else if(strcmp("111",aluin)==0)
-    {
-        if(alusrc==0)
-        {
+    else if(aluin == "111") {
+        if(alusrc==0) {
             alures=rs_num*rt_num;
             cout<<"After Mul:"<<alures;
         }
     }
-    else if(strcmp("100",aluin)==0)
-    {
+    else if(aluin == "100") {
         imm_num=imm_num*4;
         cout<<"Immediate: "<<imm_num;
     }
-    cout<<" ";
-    memory();
-    return;
-}
-
-
-void Memory(){
-    
+    cout<<endl;
+    Memory();
 }
 
 int main(){
     string instruction;
-    cout<<"Enter the instruction: ";
+    cout<<"Enter the instruction (32 bits): ";
     cin>>instruction;
-}
     
+    Decode(instruction);
+    ctrl_ckt();
+    ALU();
+    
+    return 0;
+}

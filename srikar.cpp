@@ -8,7 +8,7 @@
 using namespace std;
 
 int rs_num,rt_num,rd_num,shamt_num,funct_num,imm_num,address_num,opcode_num;
-string rs,rt,rd,shamt,funct,imm,address,type,opcode,aluop;
+string rs,rt,rd,shamt,funct,imm,address,type,opcode,aluop,aluin;
 int regdst,branch,memread,memtoreg,memwrt,alusrc,regwr,j;
 map<string, int> registers={
     {"$zero",0},
@@ -186,19 +186,19 @@ void alu_ctrl()
     {
         aluin="010";
     }
-    else if(strcmp("10",aluop)&&funct=="100000")
+    else if(strcmp("10",aluop)==0 &&strcmp("100000",funct)==0)
     {
         aluin="010";
     }
-    else if(strcmp("10",aluop)&& funct=="100010")
+    else if(strcmp("10",aluop)==0 &&strcmp("100010",funct)==0)
     {
         aluin="011";
     }
-    else if(strcmp("10",aluop)&&funct=="000010")
+    else if(strcmp("10",aluop)==0 &&strcmp("000010",funct)==0)
     {
         aluin="111";
     }
-    else if(strcmp("01",aluop))
+    else if(strcmp("01",aluop)==0)
     {
         aluin="100";
     }
@@ -209,7 +209,7 @@ void ALU(){
     {
         if(alusrc==1)
         {
-            alures=rs_num+immval;
+            alures=rs_num+imm_num;
             cout<<"After Add:"<<alures;
         }
         else if(alusrc==0)
@@ -236,8 +236,8 @@ void ALU(){
     }
     else if(strcmp("100",aluin)==0)
     {
-        immval=immval*4;
-        cout<<"Immediate: "<<immval;
+        imm_num=imm_num*4;
+        cout<<"Immediate: "<<imm_num;
     }
     cout<<" ";
     memory();

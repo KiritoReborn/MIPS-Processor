@@ -8,8 +8,8 @@
 using namespace std;
 
 int rs_num,rt_num,rd_num,shamt_num,funct_num,imm_num,address_num,opcode_num;
-string rs,rt,rd,shamt,funct,imm,address,type,opcode;
-
+string rs,rt,rd,shamt,funct,imm,address,type,opcode,aluop;
+int regdst,branch,memread,memtoreg,memwrt,alusrc,regwr,j;
 map<string, int> registers={
     {"$zero",0},
     {"$at",1},
@@ -56,24 +56,6 @@ map<int, string> opcodes={
     {101011,"I"},
     {100011,"I"}
 };
-
-map<string,int> datapath={
-    {"memread",0},
-    {"memwrite",0},
-    {"memtoreg",0},
-    {"regwrite",0},
-    {"memwrite",0},
-    {"aluop1",0},
-    {"aluop0",0},
-    {"alusrc",0},
-    {"regdst",0},
-    {"jump",0},
-    {"branch",0},
-    {"memtoreg",0},
-    {"regwrite",0},
-    {"memwrite",0}
-};  
-
 
 int convert_num_to_binary(int num){
     int binary_num=0;
@@ -143,8 +125,6 @@ void Decode(string instruction){
         
         if(opcode_num==35){
             cout<<"Load"<<endl;
-            datapath["alucontrol"]=010;
-            datapath["memread"]=1;
 
         }
 
@@ -168,19 +148,18 @@ void Decode(string instruction){
 
 void ctrl_ckt(){
     if(strcmp("101011",opcode)==0){
-        datapath["regdst"]=0;
-        datapath["alusrc"]=1;
-        datapath["memtoreg"]=1;
-        datapath["regwrite"]=1;
-        datapath["memread"]=0;
-        datapath["memwrite"]=1;
-        datapath["branch"]=1;
-        datapath["aluop1"]=1;
-        datapath["aluop0"]=1;
-        datapath["jump"]=0;
+        regdst=2;
+        branch=0;
+        memread=0;
+        memtoreg=1;
+        aluop="00";
+        memwrt=1;
+        alusrc=1;
+        regwr=0;
+        j=0;
     }
     else if(strcmp("000100",opcode)==0){
-        datapath["branch"]=1;
+        branch"]=1;
     }
     else if(strcmp("000010",opcode)==0){
         datapath["jump"]=1;

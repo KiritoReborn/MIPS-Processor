@@ -9,9 +9,10 @@
 using namespace std;
 
 vector<string> memory(1000, "00000000");
+vector<int> registers(32, 0);
 int pc=0;
 int rs_num,rt_num,rd_num,shamt_num,funct_num,imm_num,address_num,opcode_num;
-string rs,rt,rd,shamt,funct,imm,address,type,opcode,aluop,aluin;
+string rs,rt,rd,shamt,funct,imm,address,type,opcode,aluop,aluin,var1;
 int regdst,branch,memread,memtoreg,memwrt,alusrc,regwr,j,zero,alures;
 
 map<int, string> opcodes={
@@ -217,16 +218,43 @@ void ctrl_ckt(){
     
     alu_ctrl();
 }
+void Memory(){
+    if(memwrt==0 && memread==1){
+        cout<<"Memory Access----->"<<endl;
+        var1 = ""; // Clear var1 before appending new data
+        for(int i=0;i<4;i++){
+            var1 += memory[alures+i];
+        }
+        cout << "Read Data: " << var1 << endl;
+    }
+    else if(memwrt==1 && memread==0){
+        cout<<"Memory ----->"<<endl;
+        var1 = convert_num_to_binary(alures);
+        cout<<"Write Data: "<<var1<<endl;
+        for(int i=0;i<4;i++){
+            memory[alures+i] = var1.substr(i*8, 8); // Write 8 bits at a time
+        }
+    }
 
+    writeback();
+}
 void writeback(){
     if(regwr==1){
         cout<<"Writeback ----->"<<endl;
         cout<<"rd: "<<rd_num<<endl;
         cout<<"memtoReg: "<<memtoreg<<endl;
         if(memtoreg==1){
-            cout<<"Write Data: "<<alures<<endl;
-
+            cout<<"Write Data: "<<var1<<endl; // Assuming var1 holds the data read from memory
+        } else {
+            cout<<"Write Data: "<<alures<<endl; // Write ALU result
         }
+        // Assuming we have a register file array named 'registers'
+        if (memtoreg == 1) {
+            registers[rd_num] = stoi(var1); // Write memory data to register
+        } else {
+            registers[rd_num] = alures; // Write ALU result to register
+        }
+        cout << "After write back, value at destination: " << registers[rd_num] << endl;
     }    
 }
 
@@ -263,13 +291,7 @@ void ALU(){
 }
 
 int main(){
-    string instruction;
-    cout<<"Enter the instruction (32 bits): ";
-    cin>>instruction;
     
-    Decode(instruction);
-    ctrl_ckt();
-    ALU();
     
     return 0;
 }

@@ -225,19 +225,17 @@ void writeback(){
     if(regwr==1){
         cout<<"Writeback ----->"<<endl;
         cout<<"rd: "<<rd_num<<endl;
+        cout<<"rt: "<<rt_num<<endl;
         cout<<"memtoReg: "<<memtoreg<<endl;
+        int write_reg = (regdst == 1) ? rd_num : rt_num; // Determine the correct register to write to
         if(memtoreg==1){
             cout<<"Write Data: "<<var1<<endl; // Assuming var1 holds the data read from memory
+            registers[write_reg] = bitset<32>(var1).to_ulong(); // Write memory data to register
         } else {
             cout<<"Write Data: "<<alures<<endl; // Write ALU result
+            registers[write_reg] = alures; // Write ALU result to register
         }
-        // Assuming we have a register file array named 'registers'
-        if (memtoreg == 1) {
-            registers[rd_num] = stoi(var1); // Write memory data to register
-        } else {
-            registers[rd_num] = alures; // Write ALU result to register
-        }
-        cout << "After write back, value at destination: " << registers[rd_num] << endl;
+        cout << "After write back, value at destination: " << registers[write_reg] << endl;
     }    
 }
 
@@ -252,7 +250,7 @@ void Memory(){
     }
     else if(memwrt==1 && memread==0){
         cout<<"Memory ----->"<<endl;
-        var1 = convert_num_to_binary(alures);
+        var1 = to_string(convert_num_to_binary(alures));
         cout<<"Write Data: "<<var1<<endl;
         for(int i=0;i<4;i++){
             memory[alures+i] = var1.substr(i*8, 8); // Write 8 bits at a time
@@ -310,6 +308,7 @@ int main() {
         string instruction;
         Fetch(instruction);
         Decode(instruction);
+        ctrl_ckt();
         ALU();
     }
 

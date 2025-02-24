@@ -13,7 +13,7 @@ vector<string> memory(1000, "00000000");
 vector<int> registers(32, 0);
 int pc=0;
 int rs_num,rt_num,rd_num,shamt_num,funct_num,imm_num,address_num,opcode_num;
-string rs,rt,rd,shamt,funct,imm,address,type,opcode,aluop,aluin,var1;
+string instruction,rs,rt,rd,shamt,funct,imm,address,type,opcode,aluop,aluin,var1;
 int regdst,branch,memread,memtoreg,memwrt,alusrc,regwr,j,zero,alures;
 
 map<int, string> opcodes={
@@ -51,15 +51,16 @@ int convert_binary_to_num(int binary_num){
     return num;
 }
 
-void Fetch(string& instruction){
+void Fetch(){
     instruction = memory[pc] + memory[pc+1] + memory[pc+2] + memory[pc+3];
     pc = pc + 4;
     cout << "Fetch----->" << endl;
     cout << "PC: " << pc << endl;
     cout << "Instruction: " << instruction << endl;
+    
 }
 
-void Decode(string instruction){
+void Decode(){
     if(instruction.length() != 32) {
         cout << "Invalid instruction length. Must be 32 bits." << endl;
         return;
@@ -187,7 +188,7 @@ void ctrl_ckt(){
         branch=2;
         memread=0;
         memtoreg=2;
-        aluop="00";
+        aluop="22";
         memwrt=0;
         alusrc=2;
         regwr=0;
@@ -195,8 +196,6 @@ void ctrl_ckt(){
         cout << "Control: J, ALUop = 00" << endl;
         
     }
-    
-    alu_ctrl();
 }
 
 void writeback(){
@@ -235,7 +234,6 @@ void Memory(){
         }
     }
 
-    writeback();
 }
 
 void ALU(){
@@ -263,21 +261,23 @@ void ALU(){
         }
     }
     else if(aluin == "100") {
-        imm_num=imm_num*4;
         cout<<"Immediate: "<<imm_num;
     }
     cout<<endl;
-    Memory();
 }
 void Execute(){
-    
-    if(branch&&(alures==0)){
+    ctrl_ckt();
+    alu_ctrl();
+    ALU(); // Ensure ALU is called to perform the operation
+    if(branch && zero){ // Check zero flag for branch condition
         pc=pc+(imm_num)*4;
         cout << "Branch Taken: New PC = " << pc << endl;
     } else if (j) { // J
         pc = address_num<<2;
         cout << "Jump Taken: New PC = " << pc << endl;
     }
+    Memory();
+    writeback();
 }
 
 int main() {
@@ -309,11 +309,9 @@ int main() {
     registers[6] = 1;  // Second Fibonacci number
 
     while (pc < 24) {
-        string instruction;
-        Fetch(instruction);
-        Decode(instruction);
-        ctrl_ckt();
-        ALU();
+        Fetch();
+        Decode();
+        Execute();
     }
 
     // Print the final result

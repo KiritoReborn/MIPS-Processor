@@ -112,6 +112,30 @@ void Decode(string instruction){
     }
 }
 
+void alu_ctrl()
+{
+    if(strcmp("00",aluop)==0)
+    {
+        aluin="010";
+    }
+    else if(strcmp("10",aluop)==0 &&strcmp("100000",funct)==0)
+    {
+        aluin="010";
+    }
+    else if(strcmp("10",aluop)==0 &&strcmp("100010",funct)==0)
+    {
+        aluin="011";
+    }
+    else if(strcmp("10",aluop)==0 &&strcmp("000010",funct)==0)
+    {
+        aluin="111";
+    }
+    else if(strcmp("01",aluop)==0)
+    {
+        aluin="100";
+    }
+}
+
 void ctrl_ckt(){
     if(strcmp("101011",opcode)==0){
         regdst=2;
@@ -208,8 +232,46 @@ void ctrl_ckt(){
 }
 
 void ALU(){
-    
+    cout<<"ALU---";
+    if(strcmp("010",aluin)==0)
+    {
+        if(alusrc==1)
+        {
+            alures=rs_num+imm_num;
+            cout<<"After Add:"<<alures;
+        }
+        else if(alusrc==0)
+        {
+            alures=rs_num+rt_num;
+            cout<<"After Add:"<<alures;
+        }
+    }
+    else if(strcmp("011",aluin)==0)
+    {
+        if(alusrc==0)
+        {
+            alures=rs_num-rt_num;
+            cout<<"After Sub:"<<alures;
+        }
+    }
+    else if(strcmp("111",aluin)==0)
+    {
+        if(alusrc==0)
+        {
+            alures=rs_num*rt_num;
+            cout<<"After Mul:"<<alures;
+        }
+    }
+    else if(strcmp("100",aluin)==0)
+    {
+        imm_num=imm_num*4;
+        cout<<"Immediate: "<<imm_num;
+    }
+    cout<<" ";
+    memory();
+    return;
 }
+
 
 void Memory(){
     

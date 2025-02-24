@@ -63,7 +63,8 @@ map<string,int> datapath={
     {"memtoreg",0},
     {"regwrite",0},
     {"memwrite",0},
-    {"aluop",0},
+    {"aluop1",0},
+    {"aluop0",0},
     {"alusrc",0},
     {"regdst",0},
     {"jump",0},
@@ -168,11 +169,15 @@ void Decode(string instruction){
 void ctrl_ckt(){
     if(strcmp("101011",opcode)==0){
         datapath["regdst"]=0;
-        datapath["alus"]=1;
-        datapath["memread"]=0;
+        datapath["alusrc"]=1;
         datapath["memtoreg"]=1;
         datapath["regwrite"]=1;
-        datapath["aluop"]=01;
+        datapath["memread"]=0;
+        datapath["memwrite"]=1;
+        datapath["branch"]=1;
+        datapath["aluop1"]=1;
+        datapath["aluop0"]=1;
+        datapath["jump"]=0;
     }
     else if(strcmp("000100",opcode)==0){
         datapath["branch"]=1;

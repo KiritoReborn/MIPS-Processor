@@ -202,6 +202,7 @@ void ctrl_ckt(){
         regwr=0;
         j=1;
     }
+    //alu
     
     alu_ctrl();
 }

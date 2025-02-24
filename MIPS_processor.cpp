@@ -148,15 +148,16 @@ void Decode(string instruction){
 
 void ctrl_ckt(){
     if(strcmp("101011",opcode)==0){
-        regdst=2;
-        branch=0;
-        memread=0;
-        memtoreg=1;
-        aluop="00";
-        memwrt=1;
-        alusrc=1;
-        regwr=0;
-        j=0;
+        datapath["regdst"]=0;
+        datapath["alusrc"]=1;
+        datapath["memtoreg"]=1;
+        datapath["regwrite"]=1;
+        datapath["memread"]=0;
+        datapath["memwrite"]=1;
+        datapath["branch"]=1;
+        datapath["aluop1"]=1;
+        datapath["aluop0"]=1;
+        datapath["jump"]=0;
     }
     else if(strcmp("000100",opcode)==0){
         branch"]=1;

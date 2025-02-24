@@ -228,13 +228,13 @@ void writeback(){
         cout<<"rt: "<<rt_num<<endl;
         cout<<"memtoReg: "<<memtoreg<<endl;
         int write_reg = (regdst == 1) ? rd_num : rt_num; // Determine the correct register to write to
-        if(memtoreg==1){
-            cout<<"Write Data: "<<var1<<endl; // Assuming var1 holds the data read from memory
-            registers[write_reg] = bitset<32>(var1).to_ulong(); // Write memory data to register
-        } else {
-            cout<<"Write Data: "<<alures<<endl; // Write ALU result
-            registers[write_reg] = alures; // Write ALU result to register
-        }
+        if (memtoreg == 1 && memread == 1) {  // Only read from memory when memread is active
+            cout<<"Write Data: "<<var1<<endl;
+            registers[write_reg] = bitset<32>(var1).to_ulong();
+        } else {  // Otherwise, write ALU result
+            cout<<"Write Data: "<<alures<<endl;
+            registers[write_reg] = alures;
+        } 
         cout << "After write back, value at destination: " << registers[write_reg] << endl;
     }    
 }

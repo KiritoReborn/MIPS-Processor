@@ -14,7 +14,8 @@ vector<int> registers(32, 0);
 int pc=0;
 int rs_num,rt_num,rd_num,shamt_num,funct_num,imm_num,address_num,opcode_num;
 string instruction,rs,rt,rd,shamt,funct,imm,address,type,opcode,aluop,aluin,var1;
-int regdst,branch,memread,memtoreg,memwrt,alusrc,regwr,j,zero,alures;
+int regdst,branch,memread,memtoreg,memwrt,alusrc,regwr,j,zero;
+long long alures,HI,LO;
 
 map<int, string> opcodes={
     {0b001001,"I"},  // Changed to binary notation for clarity
@@ -112,25 +113,27 @@ void Decode(){
 
 void alu_ctrl() {
     if(aluop == "00") {
-        aluin = "010";  // ADD
+        aluin="010";
     }
     else if(aluop == "10" && funct == "100000") {
-        aluin = "010";  // ADD
+        aluin="010";
     }
     else if(aluop == "10" && funct == "100010") {
-        aluin = "011";  // SUB
+        aluin="011";
     }
     else if(aluop == "10" && funct == "000010") {
-        aluin = "111";  // Shift Right (SRL)
-    }
-    else if(aluop == "10" && funct == "011000") {
-        aluin = "110";  // MUL
-    }
-    else if(aluop == "10" && funct == "011010") {
-        aluin = "101";  // DIV
+        aluin="111";
     }
     else if(aluop == "01") {
-        aluin = "100";  // Branch (BEQ)
+        aluin="100";
+    }
+    else if(aluop=="11")
+    {
+        aluin="101";
+    }
+    else if(aluop=="100")
+    {
+        aluin="110";
     }
 }
 
@@ -152,12 +155,24 @@ void ctrl_ckt(){
         branch=0;
         memread=0;
         memtoreg=1;
-        aluop="10";
         memwrt=0;
         alusrc=0;
         regwr=1;
         j=0;
-        cout << "Control: R-type, ALUop = 10" << endl;
+        if(funct=="011000")
+        {
+            aluop="11";
+            cout << "Control: R-type, ALUop = 11" << endl;
+        }
+        else if(funct=="010010")
+        {
+            aluop="100";
+            cout << "Control: MFLO, ALUop = 100" << endl;
+        }
+        else{
+            aluop="10";
+            cout << "Control: R-type, ALUop = 10" << endl;
+        }
     }
     else if(opcode == "000100"){ //BEQ
         regdst=2;
@@ -202,7 +217,6 @@ void ctrl_ckt(){
         cout << "Control: J, ALUop = 00" << endl;
         
     }
-
 }
 
 void writeback(){
@@ -212,7 +226,12 @@ void writeback(){
         cout<<"rt: "<<rt_num<<endl;
         cout<<"memtoReg: "<<memtoreg<<endl;
         int write_reg = (regdst == 1) ? rd_num : rt_num; // Determine the correct register to write to
-        if (memtoreg == 1 && memread == 1) {  // Only read from memory when memread is active
+        if(aluin=="110")
+        {
+            cout<<"Write Data: "<<LO<<endl;
+            registers[write_reg] = LO;
+        }
+        else if (memtoreg == 1 && memread == 1) {  // Only read from memory when memread is active
             cout<<"Write Data: "<<var1<<endl;
             registers[write_reg] = bitset<32>(var1).to_ulong();
         } else {  // Otherwise, write ALU result
@@ -243,52 +262,42 @@ void Memory(){
 
 }
 
-void ALU() {
-    cout << "ALU---";
-    if (aluin == "010") {
-        if (alusrc == 1) {
-            alures = registers[rs_num] + imm_num;
-            cout << "After Add: " << alures;
+void ALU(){
+    cout<<"ALU---";
+    if(aluin == "010") {
+        if(alusrc==1) {
+            alures=registers[rs_num]+imm_num;
+            cout<<"After Add:"<<alures;
         }
-        else if (alusrc == 0) {
-            alures = registers[rs_num] + registers[rt_num];
-            cout << "After Add: " << alures;
-        }
-    }
-    else if (aluin == "011") {
-        if (alusrc == 0) {
-            alures = registers[rs_num] - registers[rt_num];
-            cout << "After Sub: " << alures;
+        else if(alusrc==0) {
+            alures=registers[rs_num]+registers[rt_num];
+            cout<<"After Add:"<<alures;
         }
     }
-    else if (aluin == "110") {
-        if (alusrc == 0) {
-            alures = registers[rs_num] * registers[rt_num];
-            cout << "After Mul: " << alures;
+    else if(aluin == "011") {
+        if(alusrc==0) {
+            alures=registers[rs_num]-registers[rt_num];
+            cout<<"After Sub:"<<alures;
         }
     }
-    else if (aluin == "101") {
-        if (alusrc == 0) {
-            if (registers[rt_num] != 0) {
-                alures = registers[rs_num] / registers[rt_num]; // Division
-                cout << "After Div: " << alures;
-            } else {
-                cout << "Division by zero error!";
-            }
+    else if(aluin == "101") {
+        if(alusrc==0) {
+            alures=(long long)registers[rs_num]*(long long)registers[rt_num];
+            LO = (int)(alures & 0xFFFFFFFF);
+            HI=(int)((alures >> 32) & 0xFFFFFFFF);
+            cout<<"After Mul:"<<alures;
         }
     }
-    else if (aluin == "111") {
-        if (alusrc == 0) {
-            alures = registers[rs_num] >> shamt_num; // Shift Right
-            cout << "After Shift Right: " << alures;
-        }
+    else if(aluin=="110")
+    {
+        registers[rd_num]=LO;
+        cout << "After MFLO: Register " << rd_num << " = " << registers[rd_num] << endl;
     }
-    else if (aluin == "100") {
-        cout << "Immediate: " << imm_num;
+    else if(aluin == "100") {
+        cout<<"Immediate: "<<imm_num;
     }
-    cout << endl; // Ensure a newline after each ALU operation
+    cout<<endl;
 }
-
 void Execute(){
     ctrl_ckt();
     alu_ctrl();
@@ -304,58 +313,30 @@ void Execute(){
     writeback();
 }
 
+
 int main() {
     // *Correct MIPS Instructions in Memory (Big-Endian)*
-<<<<<<< HEAD
-    // LW $16, 1020($0) -> opcode: 0x8C1003FC
-    memory[0] = "10001100"; memory[1] = "00010000"; memory[2] = "00000011"; memory[3] = "11111100";
-
-    // LW $24, 1004($0) -> opcode: 0x8C1803EC
-    memory[4] = "10001100"; memory[5] = "00011000"; memory[6] = "00000011"; memory[7] = "11101100";
-
-    // ADD $8, $16, $24 -> opcode: 0x02184020
-    memory[8] = "00000010"; memory[9] = "00011000"; memory[10] = "00100000"; memory[11] = "00100000";
-
-    // LW $11, 1004($0) -> opcode: 0x8C0B03EC
-    memory[12] = "10001100"; memory[13] = "00001011"; memory[14] = "00000011"; memory[15] = "11101100";
-
-    // LW $12, 1004($0) -> opcode: 0x8C0C03EC
-    memory[16] = "10001100"; memory[17] = "00001100"; memory[18] = "00000011"; memory[19] = "11101100";
-=======
-    // BEQ $5, $1, 5 -> opcode: 0x10220005
+    // BEQ $1, $2, 5 -> opcode: 0x10220005
     memory[0] = "00010000"; memory[1] = "00100101"; memory[2] = "00000000"; memory[3] = "00000101";
 
-    // ADD $4, $3, $2 -> opcode: 0x00602020
+    // ADD $4, $3, $0 -> opcode: 0x00602020
     memory[4] = "00000000"; memory[5] = "01100010"; memory[6] = "00100000"; memory[7] = "00100000";
 
-    // ADD $2, $3, 0 -> opcode: 0x00643020
+    // ADD $6, $3, $4 -> opcode: 0x00643020
     memory[8] = "00000000"; memory[9] = "01100000"; memory[10] = "00010000"; memory[11] = "00100000";
 
-    // ADD $3, $4, 0 -> opcode: 0x00862020
+    // ADD $3, $4, $6 -> opcode: 0x00862020
     memory[12] = "00000000"; memory[13] = "10000000"; memory[14] = "00011000"; memory[15] = "00100000";
 
-    // ADD $5,$5,$6 -> opcode: 0xAC230028
+    // SW $3, 40($5) -> opcode: 0xAC230028
     memory[16] = "00000000"; memory[17] = "10100110"; memory[18] = "00101000"; memory[19] = "00100000";
->>>>>>> 4a428289bf52bb6650bd32d4c90db937e8669e40
 
-    // factorial_loop: BEQ $8, $12, end_loop -> opcode: 0x110C0004
-    memory[20] = "00010001"; memory[21] = "00001100"; memory[22] = "00000000"; memory[23] = "00000100";
-
-    // MUL $11, $11, $12 -> opcode: 0x016C0018
-    memory[24] = "00000001"; memory[25] = "01101100"; memory[26] = "00000000"; memory[27] = "00011000";
-
-    // ADD $12, $12, $24 -> opcode: 0x01986020
-    memory[28] = "00000001"; memory[29] = "10011000"; memory[30] = "00110000"; memory[31] = "00100000";
-
-    // J factorial_loop -> opcode: 0x08000005
-    memory[32] = "00001000"; memory[33] = "00000000"; memory[34] = "00000000"; memory[35] = "00000101";
-
-    // end_loop: SW $11, 6000($0) -> opcode: 0xAC0B1770
-    memory[36] = "10101100"; memory[37] = "00001011"; memory[38] = "00010111"; memory[39] = "01110000";
+    // J 0x00000008 -> opcode: 0x08000000
+    memory[20] = "00001000"; memory[21] = "00000000"; memory[22] = "00000000"; memory[23] = "00000000";
 
     // Initialize registers
-<<<<<<< Updated upstream
-    registers[1] = 5;  // Number of Fibonacci terms to compute
+
+    registers[1] = 7;  // Number of Fibonacci terms to compute
     registers[2] = 0;  // Loop counter
     registers[3] = 1;  // First Fibonacci number
     registers[4] = 1; // Result storage (dummy)
@@ -363,33 +344,12 @@ int main() {
     registers[6] = 1;  // Second Fibonacci number
 
     while (pc < 100) {
-=======
-<<<<<<< HEAD
-    registers[16] = 5;  // Example value for $s0
-    registers[24] = 1;   // Example value for $t8
-    registers[8] = registers[16] + registers[24];
-    registers[11] = 1;   // Factorial result initialized to 1
-    registers[12] = registers[24];
-
-    while (pc < 40) {
-=======
-    registers[1] = 1;  // Number of Fibonacci terms to compute
-    registers[2] = 0;  // first fibonacci number
-    registers[3] = 1;  // second Fibonacci number
-    registers[4] = 0; // Result storage (dummy)
-    registers[5] = 2;  // Memory address offset
-    registers[6] = 1;  // for loop counter(+1)
-
-    while (pc < 100) {
->>>>>>> 4a428289bf52bb6650bd32d4c90db937e8669e40
->>>>>>> Stashed changes
         Fetch();
         Decode();
         Execute();
     }
 
     // Print the final result
-    cout << "Factorial result stored in memory[6000]: " << registers[11] << endl;
+    cout << "Final value in $4: " << registers[4] << endl;
     return 0;
-
 }

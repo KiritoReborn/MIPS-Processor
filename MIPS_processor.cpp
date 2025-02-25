@@ -301,11 +301,8 @@ int main() {
     memory[20] = "00001000"; memory[21] = "00000000"; memory[22] = "00000000"; memory[23] = "00000000";
 
     // Initialize registers
-<<<<<<< Updated upstream
+
     registers[1] = 5;  // Number of Fibonacci terms to compute
-=======
-    registers[1] = 2;  // Number of Fibonacci terms to compute
->>>>>>> Stashed changes
     registers[2] = 0;  // Loop counter
     registers[3] = 1;  // First Fibonacci number
     registers[4] = 1; // Result storage (dummy)

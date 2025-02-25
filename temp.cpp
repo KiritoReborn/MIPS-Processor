@@ -282,31 +282,31 @@ void Execute(){
 
 int main() {
     // *Correct MIPS Instructions in Memory (Big-Endian)*
-    // BEQ $5, $1, 5 -> opcode: 0x10220005
+    // BEQ $1, $2, 5 -> opcode: 0x10220005
     memory[0] = "00010000"; memory[1] = "00100101"; memory[2] = "00000000"; memory[3] = "00000101";
 
-    // ADD $4, $3, $2 -> opcode: 0x00602020
+    // ADD $4, $3, $0 -> opcode: 0x00602020
     memory[4] = "00000000"; memory[5] = "01100010"; memory[6] = "00100000"; memory[7] = "00100000";
 
-    // ADD $2, $3, 0 -> opcode: 0x00643020
+    // ADD $6, $3, $4 -> opcode: 0x00643020
     memory[8] = "00000000"; memory[9] = "01100000"; memory[10] = "00010000"; memory[11] = "00100000";
 
-    // ADD $3, $4, 0 -> opcode: 0x00862020
+    // ADD $3, $4, $6 -> opcode: 0x00862020
     memory[12] = "00000000"; memory[13] = "10000000"; memory[14] = "00011000"; memory[15] = "00100000";
 
-    // ADD $5,$5,$6 -> opcode: 0xAC230028
+    // SW $3, 40($5) -> opcode: 0xAC230028
     memory[16] = "00000000"; memory[17] = "10100110"; memory[18] = "00101000"; memory[19] = "00100000";
 
     // J 0x00000008 -> opcode: 0x08000000
     memory[20] = "00001000"; memory[21] = "00000000"; memory[22] = "00000000"; memory[23] = "00000000";
 
     // Initialize registers
-    registers[1] = 1;  // Number of Fibonacci terms to compute
-    registers[2] = 0;  // first fibonacci number
-    registers[3] = 1;  // second Fibonacci number
-    registers[4] = 0; // Result storage (dummy)
+    registers[1] = 5;  // Number of Fibonacci terms to compute
+    registers[2] = 0;  // Loop counter
+    registers[3] = 1;  // First Fibonacci number
+    registers[4] = 1; // Result storage (dummy)
     registers[5] = 2;  // Memory address offset
-    registers[6] = 1;  // for loop counter(+1)
+    registers[6] = 1;  // Second Fibonacci number
 
     while (pc < 100) {
         Fetch();

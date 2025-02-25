@@ -12,9 +12,10 @@ using namespace std;
 vector<string> memory(1000, "00000000");
 vector<int> registers(32, 0);
 int pc=0;
-int rs_num,rt_num,rd_num,shamt_num,funct_num,imm_num,address_num,opcode_num,LO,HI;
+int rs_num,rt_num,rd_num,shamt_num,funct_num,imm_num,address_num,opcode_num;
 string instruction,rs,rt,rd,shamt,funct,imm,address,type,opcode,aluop,aluin,var1;
-int regdst,branch,memread,memtoreg,memwrt,alusrc,regwr,j,zero,alures;
+int regdst,branch,memread,memtoreg,memwrt,alusrc,regwr,j,zero;
+long long alures,HI,LO;
 
 map<int, string> opcodes={
     {0b001001,"I"},  // Changed to binary notation for clarity
@@ -225,7 +226,12 @@ void writeback(){
         cout<<"rt: "<<rt_num<<endl;
         cout<<"memtoReg: "<<memtoreg<<endl;
         int write_reg = (regdst == 1) ? rd_num : rt_num; // Determine the correct register to write to
-        if (memtoreg == 1 && memread == 1) {  // Only read from memory when memread is active
+        if(aluin=="110")
+        {
+            cout<<"Write Data: "<<LO<<endl;
+            registers[write_reg] = LO;
+        }
+        else if (memtoreg == 1 && memread == 1) {  // Only read from memory when memread is active
             cout<<"Write Data: "<<var1<<endl;
             registers[write_reg] = bitset<32>(var1).to_ulong();
         } else {  // Otherwise, write ALU result
@@ -308,7 +314,6 @@ void Execute(){
 }
 
 int main() {
-    /*
     // beq $3, $4 -> opcode: 0x8C1003FC
     memory[0] = "00010000"; memory[1] = "01100100"; memory[2] = "11111111"; memory[3] = "11111100";
 
@@ -318,61 +323,26 @@ int main() {
     
     // add $1, $5 -> opcode: 0x02184020
     memory[8] = "00000000"; memory[9] = "01001010"; memory[10] = "00001000"; memory[11] = "00100000";
-    
     // mult $2, $1 -> opcode: 0x8C0B03EC
-    memory[12] = "00000000"; memory[13] = "00010000"; memory[14] = "00000000"; memory[15] = "00011000";
+    memory[0] = "00000000"; memory[1] = "01000001"; memory[2] = "00000000"; memory[3] = "00011000";
     // mflo to store result in $2 -> opcode: 0x8C0C03EC
-    memory[16] = "00000000"; memory[17] = "00000000"; memory[18] = "00100000"; memory[19] = "00010010";
-    
-    
-    // return factorial  -> opcode: 0x110C0004
-    memory[20] = "00010001"; memory[21] = "00001100"; memory[22] = "00000000"; memory[23] = "00000100";
-    
-    // MUL $11, $11, $12 -> opcode: 0x016C0018
-    memory[24] = "00000001"; memory[25] = "01101100"; memory[26] = "00000000"; memory[27] = "00011000";
-    
-    // ADD $12, $12, $24 -> opcode: 0x01986020
-    memory[28] = "00000001"; memory[29] = "10011000"; memory[30] = "00110000"; memory[31] = "00100000";
-    
-    // J factorial_loop -> opcode: 0x08000005
-    memory[32] = "00001000"; memory[33] = "00000000"; memory[34] = "00000000"; memory[35] = "00000101";
-    
-    // end_loop: SW $11, 6000($0) -> opcode: 0xAC0B1770
-    memory[36] = "10101100"; memory[37] = "00001011"; memory[38] = "00010111"; memory[39] = "01110000";
-    */
-    // Initialize registers with sample values
-    // beq $3, $4, end_loop (Branch if counter == target number)
-    memory[0] = "00010000"; memory[1] = "01100100"; memory[2] = "00000000"; memory[3] = "00000101";
+    memory[4] = "00000000"; memory[5] = "00000000"; memory[6] = "00010000"; memory[7] = "00010010";
 
-    // mult $2, $3 (Multiply factorial * counter)
-    memory[4] = "00000000"; memory[5] = "01000011"; memory[6] = "00000000"; memory[7] = "00011000";
-
-    // mflo $2 (Move result to $2)
-    memory[8] = "00000000"; memory[9] = "00000000"; memory[10] = "00100000"; memory[11] = "00010010";
-
-    // add $3, $3, $5 (Increment counter)
-    memory[12] = "00000000"; memory[13] = "01100101"; memory[14] = "00011000"; memory[15] = "00100000";
-
-   /* // j loop_start (Jump back to beginning)
-    memory[16] = "00001000"; memory[17] = "00000000"; memory[18] = "00000000"; memory[19] = "00000000";
-
-    // end_loop:
-    memory[20] = "00000000"; memory[21] = "00000000"; memory[22] = "00000000"; memory[23] = "00000000";
-    */
-    registers[1] = 0;  // a
-    registers[2] = 1; //factorial
+    // jump to 1st instruction
+    memory[20] = "00001000"; memory[21] = "00000000"; memory[22] = "00000000"; memory[23] = "00000000";
+    registers[1] = 1;  // a
+    registers[2] = 5; //factorial
     registers[3]=1; //for loop counter
     registers[4]=5; // number for which factorial is to be calculated 
     registers[5] = 1;  //for (+1) in loop(dont change)
+
     cout << "\nStarting program execution..." << endl;
     // Main execution loop
-    while (pc < 100) {
+    while (pc < 10) {
         cout << "\n=== Instruction at PC=" << pc << " ===" << endl;
         Fetch();
         Decode();
         Execute();
-        
-        
     }
     
     // Print the final result

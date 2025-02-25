@@ -313,24 +313,27 @@ void Execute(){
 }
 
 int main() {
-    memory = {
-        "10001100", "00010000", "00000011", "11111100",
-        "10001100", "00011000", "00000011", "11101100",
-        "00000010", "00011000", "01000000", "00100000",
-        "10001100", "00001011", "00000011", "11101100",
-        "10001100", "00001100", "00000011", "11101100",
-        "00010001", "00001100", "00000000", "00000011",
-        "01110001", "01101100", "01011000", "00000010",
-        "00000001", "10011000", "01100000", "00100000",
-        "00001000", "00010000", "00000000", "00000101",
-        "10101100", "00001011", "00010111", "01110000"
-    };
+    // beq $3, $4 -> opcode: 0x8C1003FC
+    memory[0] = "00010000"; memory[1] = "01100100"; memory[2] = "00000000"; memory[3] = "00001100";
 
-    registers[1] = 0;  // a
-    registers[2] = 1;  // factorial
-    registers[3] = 1;  // for loop counter
-    registers[4] = 5;  // number for which factorial is to be calculated
-    registers[5] = 1;  // for (+1) in loop (don't change)
+    
+    // add $3, $5 -> opcode: 0x8C1803EC
+    memory[4] = "00000000"; memory[5] = "01100101"; memory[6] = "00011000"; memory[7] = "00100000";
+    
+    // add $1, $5 -> opcode: 0x02184020
+    memory[8] = "00000000"; memory[9] = "00100101"; memory[10] = "00001000"; memory[11] = "00100000";
+    // mult $2, $1 -> opcode: 0x8C0B03EC
+    memory[12] = "00000000"; memory[13] = "01000001"; memory[14] = "00010000"; memory[15] = "00011000";
+    // mflo to store result in $2 -> opcode: 0x8C0C03EC
+    memory[16] = "00000000"; memory[17] = "00000000"; memory[18] = "00010000"; memory[19] = "00010010";
+
+    // jump to 1st instruction
+    memory[20] = "00001000"; memory[21] = "00000000"; memory[22] = "00000000"; memory[23] = "00000000";
+    registers[1] = 1;  // a
+    registers[2] = 1; //factorial
+    registers[3]=1; //for loop counter
+    registers[4]=6; // number for which factorial is to be calculated 
+    registers[5] = 1;  //for (+1) in loop(dont change)
 
     cout << "\nStarting program execution..." << endl;
 

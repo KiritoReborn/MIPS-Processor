@@ -12,8 +12,8 @@ using namespace std;
 vector<string> memory(1000, "00000000");
 vector<int> registers(32, 0);
 int pc=0;
-int rs_num,rt_num,rd_num,shamt_num,funct_num,imm_num,address_num,opcode_num;
-string rs,rt,rd,shamt,funct,imm,address,type,opcode,aluop,aluin,var1;
+int rs_num,rt_num,rd_num,shamt_num,funct_num,imm_num,address_num,opcode_num,LO,HI;
+string instruction,rs,rt,rd,shamt,funct,imm,address,type,opcode,aluop,aluin,var1;
 int regdst,branch,memread,memtoreg,memwrt,alusrc,regwr,j,zero,alures;
 
 map<int, string> opcodes={
@@ -51,15 +51,16 @@ int convert_binary_to_num(int binary_num){
     return num;
 }
 
-void Fetch(string& instruction){
+void Fetch(){
     instruction = memory[pc] + memory[pc+1] + memory[pc+2] + memory[pc+3];
     pc = pc + 4;
     cout << "Fetch----->" << endl;
     cout << "PC: " << pc << endl;
     cout << "Instruction: " << instruction << endl;
+    
 }
 
-void Decode(string instruction){
+void Decode(){
     if(instruction.length() != 32) {
         cout << "Invalid instruction length. Must be 32 bits." << endl;
         return;
@@ -125,6 +126,14 @@ void alu_ctrl() {
     else if(aluop == "01") {
         aluin="100";
     }
+    else if(aluop=="11")
+    {
+        aluin="101";
+    }
+    else if(aluop=="100")
+    {
+        aluin="110";
+    }
 }
 
 void ctrl_ckt(){
@@ -145,12 +154,24 @@ void ctrl_ckt(){
         branch=0;
         memread=0;
         memtoreg=1;
-        aluop="10";
         memwrt=0;
         alusrc=0;
         regwr=1;
         j=0;
-        cout << "Control: R-type, ALUop = 10" << endl;
+        if(funct=="011000")
+        {
+            aluop="11";
+            cout << "Control: R-type, ALUop = 11" << endl;
+        }
+        else if(funct=="010010")
+        {
+            aluop="100";
+            cout << "Control: MFLO, ALUop = 100" << endl;
+        }
+        else{
+            aluop="10";
+            cout << "Control: R-type, ALUop = 10" << endl;
+        }
     }
     else if(opcode == "000100"){ //BEQ
         regdst=2;
@@ -187,7 +208,7 @@ void ctrl_ckt(){
         branch=2;
         memread=0;
         memtoreg=2;
-        aluop="00";
+        aluop="22";
         memwrt=0;
         alusrc=2;
         regwr=0;
@@ -195,8 +216,6 @@ void ctrl_ckt(){
         cout << "Control: J, ALUop = 00" << endl;
         
     }
-    
-    alu_ctrl();
 }
 
 void writeback(){
@@ -235,7 +254,6 @@ void Memory(){
         }
     }
 
-    writeback();
 }
 
 void ALU(){
@@ -256,67 +274,109 @@ void ALU(){
             cout<<"After Sub:"<<alures;
         }
     }
-    else if(aluin == "111") {
+    else if(aluin == "101") {
         if(alusrc==0) {
-            alures=registers[rs_num]*registers[rt_num];
+            alures=(long long)registers[rs_num]*(long long)registers[rt_num];
+            LO = (int)(alures & 0xFFFFFFFF);
+            HI=(int)((alures >> 32) & 0xFFFFFFFF);
             cout<<"After Mul:"<<alures;
         }
     }
+    else if(aluin=="110")
+    {
+        registers[rd_num]=LO;
+        cout << "After MFLO: Register " << rd_num << " = " << registers[rd_num] << endl;
+    }
     else if(aluin == "100") {
-        imm_num=imm_num*4;
         cout<<"Immediate: "<<imm_num;
     }
     cout<<endl;
-    Memory();
 }
 void Execute(){
-    
-    if(branch&&(alures==0)){
+    ctrl_ckt();
+    alu_ctrl();
+    ALU(); // Ensure ALU is called to perform the operation
+    if(branch && zero){ // Check zero flag for branch condition
         pc=pc+(imm_num)*4;
         cout << "Branch Taken: New PC = " << pc << endl;
     } else if (j) { // J
         pc = address_num<<2;
         cout << "Jump Taken: New PC = " << pc << endl;
     }
+    Memory();
+    writeback();
 }
 
 int main() {
-    // *Correct MIPS Instructions in Memory (Big-Endian)*
-    // BEQ $1, $2, 5 -> opcode: 0x10220005
-    memory[0] = "00010000"; memory[1] = "00100101"; memory[2] = "00000000"; memory[3] = "00000101";
+    /*
+    // beq $3, $4 -> opcode: 0x8C1003FC
+    memory[0] = "00010000"; memory[1] = "01100100"; memory[2] = "11111111"; memory[3] = "11111100";
 
-    // ADD $4, $3, $0 -> opcode: 0x00602020
-    memory[4] = "00000000"; memory[5] = "01100010"; memory[6] = "00100000"; memory[7] = "00100000";
+    
+    // add $3, $5 -> opcode: 0x8C1803EC
+    memory[4] = "00000000"; memory[5] = "11001010"; memory[6] = "00011000"; memory[7] = "00100000";
+    
+    // add $1, $5 -> opcode: 0x02184020
+    memory[8] = "00000000"; memory[9] = "01001010"; memory[10] = "00001000"; memory[11] = "00100000";
+    
+    // mult $2, $1 -> opcode: 0x8C0B03EC
+    memory[12] = "00000000"; memory[13] = "00010000"; memory[14] = "00000000"; memory[15] = "00011000";
+    // mflo to store result in $2 -> opcode: 0x8C0C03EC
+    memory[16] = "00000000"; memory[17] = "00000000"; memory[18] = "00100000"; memory[19] = "00010010";
+    
+    
+    // return factorial  -> opcode: 0x110C0004
+    memory[20] = "00010001"; memory[21] = "00001100"; memory[22] = "00000000"; memory[23] = "00000100";
+    
+    // MUL $11, $11, $12 -> opcode: 0x016C0018
+    memory[24] = "00000001"; memory[25] = "01101100"; memory[26] = "00000000"; memory[27] = "00011000";
+    
+    // ADD $12, $12, $24 -> opcode: 0x01986020
+    memory[28] = "00000001"; memory[29] = "10011000"; memory[30] = "00110000"; memory[31] = "00100000";
+    
+    // J factorial_loop -> opcode: 0x08000005
+    memory[32] = "00001000"; memory[33] = "00000000"; memory[34] = "00000000"; memory[35] = "00000101";
+    
+    // end_loop: SW $11, 6000($0) -> opcode: 0xAC0B1770
+    memory[36] = "10101100"; memory[37] = "00001011"; memory[38] = "00010111"; memory[39] = "01110000";
+    */
+    // Initialize registers with sample values
+    // beq $3, $4, end_loop (Branch if counter == target number)
+    memory[0] = "00010000"; memory[1] = "01100100"; memory[2] = "00000000"; memory[3] = "00000101";
 
-    // ADD $6, $3, $4 -> opcode: 0x00643020
-    memory[8] = "00000000"; memory[9] = "01100000"; memory[10] = "00010000"; memory[11] = "00100000";
+    // mult $2, $3 (Multiply factorial * counter)
+    memory[4] = "00000000"; memory[5] = "01000011"; memory[6] = "00000000"; memory[7] = "00011000";
 
-    // ADD $3, $4, $6 -> opcode: 0x00862020
-    memory[12] = "00000000"; memory[13] = "10000000"; memory[14] = "00011000"; memory[15] = "00100000";
+    // mflo $2 (Move result to $2)
+    memory[8] = "00000000"; memory[9] = "00000000"; memory[10] = "00100000"; memory[11] = "00010010";
 
-    // SW $3, 40($5) -> opcode: 0xAC230028
-    memory[16] = "00000000"; memory[17] = "10100110"; memory[18] = "00101000"; memory[19] = "00100000";
+    // add $3, $3, $5 (Increment counter)
+    memory[12] = "00000000"; memory[13] = "01100101"; memory[14] = "00011000"; memory[15] = "00100000";
 
-    // J 0x00000008 -> opcode: 0x08000000
-    memory[20] = "00001000"; memory[21] = "00000000"; memory[22] = "00000000"; memory[23] = "00000000";
+   /* // j loop_start (Jump back to beginning)
+    memory[16] = "00001000"; memory[17] = "00000000"; memory[18] = "00000000"; memory[19] = "00000000";
 
-    // Initialize registers
-    registers[1] = 8;  // Number of Fibonacci terms to compute
-    registers[2] = 0;  // Loop counter
-    registers[3] = 1;  // First Fibonacci number
-    registers[4] = 88; // Result storage (dummy)
-    registers[5] = 2;  // Memory address offset
-    registers[6] = 1;  // Second Fibonacci number
-
-    while (pc < 24) {
-        string instruction;
-        Fetch(instruction);
-        Decode(instruction);
-        ctrl_ckt();
-        ALU();
+    // end_loop:
+    memory[20] = "00000000"; memory[21] = "00000000"; memory[22] = "00000000"; memory[23] = "00000000";
+    */
+    registers[1] = 0;  // a
+    registers[2] = 1; //factorial
+    registers[3]=1; //for loop counter
+    registers[4]=5; // number for which factorial is to be calculated 
+    registers[5] = 1;  //for (+1) in loop(dont change)
+    cout << "\nStarting program execution..." << endl;
+    // Main execution loop
+    while (pc < 100) {
+        cout << "\n=== Instruction at PC=" << pc << " ===" << endl;
+        Fetch();
+        Decode();
+        Execute();
+        
+        
     }
-
+    
     // Print the final result
-    cout << "Final value in $4: " << registers[4] << endl;
+    cout << "\nProgram execution completed." << endl;
+    cout << "Factorial result stored : " << registers[2] << endl;
     return 0;
 }

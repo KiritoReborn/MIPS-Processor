@@ -333,7 +333,7 @@ int main() {
     registers[1] = 1;  // a
     registers[2] = 1; //factorial
     registers[3]=1; //for loop counter
-    registers[4]=7; // number for which factorial is to be calculated 
+    registers[4]=6; // number for which factorial is to be calculated 
     registers[5] = 1;  //for (+1) in loop(dont change)
 
     cout << "\nStarting program execution..." << endl;

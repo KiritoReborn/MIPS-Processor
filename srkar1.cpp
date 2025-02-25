@@ -315,30 +315,30 @@ void Execute(){
 
 int main() {
     // beq $3, $4 -> opcode: 0x8C1003FC
-    memory[0] = "00010000"; memory[1] = "01100100"; memory[2] = "11111111"; memory[3] = "11111100";
+    memory[0] = "00010000"; memory[1] = "01100100"; memory[2] = "00000000"; memory[3] = "00001100";
 
     
     // add $3, $5 -> opcode: 0x8C1803EC
-    memory[4] = "00000000"; memory[5] = "11001010"; memory[6] = "00011000"; memory[7] = "00100000";
+    memory[4] = "00000000"; memory[5] = "01100101"; memory[6] = "00011000"; memory[7] = "00100000";
     
     // add $1, $5 -> opcode: 0x02184020
-    memory[8] = "00000000"; memory[9] = "01001010"; memory[10] = "00001000"; memory[11] = "00100000";
+    memory[8] = "00000000"; memory[9] = "00100101"; memory[10] = "00001000"; memory[11] = "00100000";
     // mult $2, $1 -> opcode: 0x8C0B03EC
-    memory[0] = "00000000"; memory[1] = "01000001"; memory[2] = "00000000"; memory[3] = "00011000";
+    memory[12] = "00000000"; memory[13] = "01000001"; memory[14] = "00010000"; memory[15] = "00011000";
     // mflo to store result in $2 -> opcode: 0x8C0C03EC
-    memory[4] = "00000000"; memory[5] = "00000000"; memory[6] = "00010000"; memory[7] = "00010010";
+    memory[16] = "00000000"; memory[17] = "00000000"; memory[18] = "00010000"; memory[19] = "00010010";
 
     // jump to 1st instruction
     memory[20] = "00001000"; memory[21] = "00000000"; memory[22] = "00000000"; memory[23] = "00000000";
     registers[1] = 1;  // a
-    registers[2] = 5; //factorial
+    registers[2] = 1; //factorial
     registers[3]=1; //for loop counter
-    registers[4]=5; // number for which factorial is to be calculated 
+    registers[4]=7; // number for which factorial is to be calculated 
     registers[5] = 1;  //for (+1) in loop(dont change)
 
     cout << "\nStarting program execution..." << endl;
     // Main execution loop
-    while (pc < 10) {
+    while (pc < 100) {
         cout << "\n=== Instruction at PC=" << pc << " ===" << endl;
         Fetch();
         Decode();

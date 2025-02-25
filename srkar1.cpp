@@ -12,9 +12,10 @@ using namespace std;
 vector<string> memory(1000, "00000000");
 vector<int> registers(32, 0);
 int pc=0;
-int rs_num,rt_num,rd_num,shamt_num,funct_num,imm_num,address_num,opcode_num,LO,HI;
+int rs_num,rt_num,rd_num,shamt_num,funct_num,imm_num,address_num,opcode_num;
 string instruction,rs,rt,rd,shamt,funct,imm,address,type,opcode,aluop,aluin,var1;
-int regdst,branch,memread,memtoreg,memwrt,alusrc,regwr,j,zero,alures;
+int regdst,branch,memread,memtoreg,memwrt,alusrc,regwr,j,zero;
+long long alures,HI,LO;
 
 map<int, string> opcodes={
     {0b001001,"I"},  // Changed to binary notation for clarity
@@ -332,11 +333,10 @@ int main() {
     registers[1] = 1;  // a
     registers[2] = 1; //factorial
     registers[3]=1; //for loop counter
-    registers[4]=6; // number for which factorial is to be calculated 
+    registers[4]=7; // number for which factorial is to be calculated 
     registers[5] = 1;  //for (+1) in loop(dont change)
 
     cout << "\nStarting program execution..." << endl;
-
     // Main execution loop
     while (pc < 100) {
         cout << "\n=== Instruction at PC=" << pc << " ===" << endl;
@@ -344,10 +344,9 @@ int main() {
         Decode();
         Execute();
     }
-
+    
     // Print the final result
     cout << "\nProgram execution completed." << endl;
-    cout << "Factorial result stored: " << registers[2] << endl;
-
+    cout << "Factorial result stored : " << registers[2] << endl;
     return 0;
 }

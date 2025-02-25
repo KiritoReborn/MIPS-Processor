@@ -14,7 +14,8 @@ vector<int> registers(32, 0);
 int pc=0;
 int rs_num,rt_num,rd_num,shamt_num,funct_num,imm_num,address_num,opcode_num;
 string instruction,rs,rt,rd,shamt,funct,imm,address,type,opcode,aluop,aluin,var1;
-int regdst,branch,memread,memtoreg,memwrt,alusrc,regwr,j,zero,alures;
+int regdst,branch,memread,memtoreg,memwrt,alusrc,regwr,j,zero;
+long long alures,HI,LO;
 
 map<int, string> opcodes={
     {0b001001,"I"},  // Changed to binary notation for clarity
@@ -126,6 +127,14 @@ void alu_ctrl() {
     else if(aluop == "01") {
         aluin="100";
     }
+    else if(aluop=="11")
+    {
+        aluin="101";
+    }
+    else if(aluop=="100")
+    {
+        aluin="110";
+    }
 }
 
 void ctrl_ckt(){
@@ -146,12 +155,24 @@ void ctrl_ckt(){
         branch=0;
         memread=0;
         memtoreg=1;
-        aluop="10";
         memwrt=0;
         alusrc=0;
         regwr=1;
         j=0;
-        cout << "Control: R-type, ALUop = 10" << endl;
+        if(funct=="011000")
+        {
+            aluop="11";
+            cout << "Control: R-type, ALUop = 11" << endl;
+        }
+        else if(funct=="010010")
+        {
+            aluop="100";
+            cout << "Control: MFLO, ALUop = 100" << endl;
+        }
+        else{
+            aluop="10";
+            cout << "Control: R-type, ALUop = 10" << endl;
+        }
     }
     else if(opcode == "000100"){ //BEQ
         regdst=2;
@@ -205,7 +226,12 @@ void writeback(){
         cout<<"rt: "<<rt_num<<endl;
         cout<<"memtoReg: "<<memtoreg<<endl;
         int write_reg = (regdst == 1) ? rd_num : rt_num; // Determine the correct register to write to
-        if (memtoreg == 1 && memread == 1) {  // Only read from memory when memread is active
+        if(aluin=="110")
+        {
+            cout<<"Write Data: "<<LO<<endl;
+            registers[write_reg] = LO;
+        }
+        else if (memtoreg == 1 && memread == 1) {  // Only read from memory when memread is active
             cout<<"Write Data: "<<var1<<endl;
             registers[write_reg] = bitset<32>(var1).to_ulong();
         } else {  // Otherwise, write ALU result
@@ -254,11 +280,18 @@ void ALU(){
             cout<<"After Sub:"<<alures;
         }
     }
-    else if(aluin == "111") {
+    else if(aluin == "101") {
         if(alusrc==0) {
-            alures=registers[rs_num]*registers[rt_num];
+            alures=(long long)registers[rs_num]*(long long)registers[rt_num];
+            LO = (int)(alures & 0xFFFFFFFF);
+            HI=(int)((alures >> 32) & 0xFFFFFFFF);
             cout<<"After Mul:"<<alures;
         }
+    }
+    else if(aluin=="110")
+    {
+        registers[rd_num]=LO;
+        cout << "After MFLO: Register " << rd_num << " = " << registers[rd_num] << endl;
     }
     else if(aluin == "100") {
         cout<<"Immediate: "<<imm_num;
@@ -280,7 +313,21 @@ void Execute(){
     writeback();
 }
 
+
 int main() {
+
+    cout<<"MIPS Processor Simulation"<<endl;
+    cout<<"-------------------------"<<endl;
+    int a,b;
+    cout<<"1. Enter 1 to run FIBONACCI program"<<endl;
+    cout<<"2. Enter 2 to run FACTORAIL program"<<endl;
+    cin>>a;
+    if(a==1){
+        cout<<"FIBONACCI program"<<endl;
+        cout<<"Enter the number of terms to be calculated"<<endl;
+        cin>>b;
+        cout<<"Fibonacci series upto "<<b<<" terms"<<endl;
+
     // *Correct MIPS Instructions in Memory (Big-Endian)*
     // BEQ $1, $2, 5 -> opcode: 0x10220005
     memory[0] = "00010000"; memory[1] = "00100101"; memory[2] = "00000000"; memory[3] = "00000101";
@@ -302,7 +349,7 @@ int main() {
 
     // Initialize registers
 
-    registers[1] = 5;  // Number of Fibonacci terms to compute
+    registers[1] = b;  // Number of Fibonacci terms to compute
     registers[2] = 0;  // Loop counter
     registers[3] = 1;  // First Fibonacci number
     registers[4] = 1; // Result storage (dummy)
@@ -318,4 +365,51 @@ int main() {
     // Print the final result
     cout << "Final value in $4: " << registers[4] << endl;
     return 0;
+    }
+    else if(a==2){
+        cout<<"FACTORIAL program"<<endl;
+        cout<<"Enter the number for which factorial is to be calculated"<<endl;
+        cin>>b;
+        cout<<"Factorial of "<<b<<endl;
+        // beq $3, $4 -> opcode: 0x8C1003FC
+    memory[0] = "00010000"; memory[1] = "01100100"; memory[2] = "00000000"; memory[3] = "00001100";
+
+    // add $3, $5 -> opcode: 0x8C1803EC
+    memory[4] = "00000000"; memory[5] = "01100101"; memory[6] = "00011000"; memory[7] = "00100000";
+    
+    // add $1, $5 -> opcode: 0x02184020
+    memory[8] = "00000000"; memory[9] = "00100101"; memory[10] = "00001000"; memory[11] = "00100000";
+    // mult $2, $1 -> opcode: 0x8C0B03EC
+    memory[12] = "00000000"; memory[13] = "01000001"; memory[14] = "00010000"; memory[15] = "00011000";
+    // mflo to store result in $2 -> opcode: 0x8C0C03EC
+    memory[16] = "00000000"; memory[17] = "00000000"; memory[18] = "00010000"; memory[19] = "00010010";
+
+    // jump to 1st instruction
+    memory[20] = "00001000"; memory[21] = "00000000"; memory[22] = "00000000"; memory[23] = "00000000";
+    registers[1] = 1;  // a
+    registers[2] = 1; //factorial
+    registers[3]=1; //for loop counter
+    registers[4]=b; // number for which factorial is to be calculated 
+    registers[5] = 1;  //for (+1) in loop(dont change)
+
+    cout << "\nStarting program execution..." << endl;
+
+    // Main execution loop
+    while (pc < 100) {
+        cout << "\n=== Instruction at PC=" << pc << " ===" << endl;
+        Fetch();
+        Decode();
+        Execute();
+    }
+
+    // Print the final result
+    cout << "\nProgram execution completed." << endl;
+    cout << "Factorial result stored: " << registers[2] << endl;
+
+    return 0;
+    }
+    else{
+        cout<<"Invalid input"<<endl;
+    }
+
 }

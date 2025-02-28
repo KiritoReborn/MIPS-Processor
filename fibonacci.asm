@@ -1,31 +1,34 @@
-        .data
-n:      .word 10               # Number of Fibonacci numbers to generate
-fib:    .word 0:10             # Array to store the Fibonacci numbers
-
-        .text
-        .globl main
-
+.text
+.globl main
 main:
-        # Initialize registers
-        li $t0, 0              # i = 0 (counter)
-        li $t1, 0              # Fibonacci(0) = 0
-        li $t2, 1              # Fibonacci(1) = 1
-        la $t3, fib            # Load address of fib array
-
+    # Initialize registers
+    li $1, 10       # Input: which Fibonacci number to calculate
+    li $2, 2       # Start counter at 2 since we already have the first two terms
+    li $3, 1       # First Fibonacci number
+    li $4, 1       # Result storage (initially the second term)
+    li $5, 1       # Increment value
+    li $6, 1       # Second Fibonacci number (same as $4 initially)
+    
+    # Special case for n <= 2
+    slti $t0, $1, 3       # Check if input is 1 or 2
+    bne $t0, $0, exit     # If so, result is already 1, exit
+    
 loop:
-        bge $t0, 10, exit      # If i >= 10, exit the loop
-        sw $t1, 0($t3)         # Store Fibonacci number in array
-        addi $t3, $t3, 4       # Move to next element in fib array
-        
-        # Calculate next Fibonacci number
-        add $t4, $t1, $t2      # temp = Fibonacci(i-1) + Fibonacci(i-2)
-        move $t1, $t2          # Fibonacci(i-1) = Fibonacci(i-2)
-        move $t2, $t4          # Fibonacci(i) = temp
-
-        addi $t0, $t0, 1       # Increment counter (i)
-        j loop                 # Repeat the loop
-
+    beq $2, $1, exit     # If counter reaches the limit, exit
+    add $4, $3, $6       # Add the two previous numbers
+    add $3, $0, $6       # Move second number to first position
+    add $6, $0, $4       # Update second number to the sum
+    add $2, $2, $5       # Increment counter
+    j loop               # Jump back to loop
+    
 exit:
-        # Exit program
-        li $v0, 10             # syscall number for exit
-        syscall
+    # Program ends, result is in $4
+    
+    # Add system call to display result for testing
+    li $v0, 1
+    move $a0, $4
+    syscall
+    
+    # Exit program
+    li $v0, 10
+    syscall

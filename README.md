@@ -88,5 +88,5 @@ Screenshots of the simulation results:-
 
 ## Contact
 
-For any questions or suggestions, please contact: 
+For any inquiries or suggestions, feel free to reach out via the emails listed above.
 

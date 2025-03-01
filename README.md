@@ -73,9 +73,7 @@ g++ MIPS_processor.cpp -o mips_sim
 
 ## License
 
-This project is licensed under the MIT License. See the LICENSE file for more details.
-
-## Results
+This project is licensed under the MIT License. See the [MIT License](LICENSE) file for more details.
 
 ## Results
 

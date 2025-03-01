@@ -102,9 +102,8 @@ void alu_ctrl() {
         aluin = "111";
     } else if (aluop == "01") {
         aluin = "100";  // branch comparison
-    } else if (aluop == "11") {
-        aluin = "101";
-    } else if (aluop == "100") {
+    } 
+     else if (aluop == "100") {
         aluin = "110";  // MFLO
     } else if (aluop == "001") {
         aluin = "SLT";  // I-type SLT
@@ -126,10 +125,8 @@ void ctrl_ckt() {
         if (funct == "101010") {
             aluop = "SLT_R";
             cout << "Control: SLT, ALUop = SLT_R" << endl;
-        } else if (funct == "011000") {
-            aluop = "11";
-            cout << "Control: R-type, ALUop = 11" << endl;
-        } else if (funct == "010010") {
+        } 
+         else if (funct == "010010") {
             aluop = "100";
             cout << "Control: MFLO, ALUop = 100" << endl;
         } else {
@@ -281,6 +278,6 @@ int main() {
         Execute();
     }
     
-    cout << "Final value in register 4: " << registers[4] << endl;
+    cout << "Final value " << registers[4] << endl;
     return 0;
 }

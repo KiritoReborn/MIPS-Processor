@@ -2,7 +2,7 @@
 .globl main
 main:
     # Initialize registers
-    li $1, 5        # Input: number to calculate factorial (n = 5)
+    li $1, 6        # Input: number to calculate factorial (n = 5)
     li $2, 1        # Counter, starts at 1
     li $4, 1        # Result storage (initial value 1)
 

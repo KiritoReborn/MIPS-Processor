@@ -77,7 +77,16 @@ This project is licensed under the MIT License. See the LICENSE file for more de
 
 ## Results
 
-You can add screenshots of the simulation results in this section to showcase the execution process and outputs.
+## Results
+
+Screenshots of the simulation results:- 
+
+### Factorial Simulation Output
+![Factorial Output](Result/Factorial.png)
+
+### Fibonacci Simulation Output
+![Fibonacci Output](Result/Fibonacci.png)
+
 
 ## Contact
 
